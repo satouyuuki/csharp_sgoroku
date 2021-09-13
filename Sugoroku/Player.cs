@@ -3,29 +3,28 @@ namespace Sugoroku
 {
     public class Player
     {
-        
+        /// <summary>
+        /// 現在地
+        /// </summary>
+        public int Position { get; set; }
+
+        /// <summary>
+        /// プレイヤーの名前
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// プレイヤーが自分かどうか
+        /// </summary>
+        private bool IsMainPlayer => Name != "cp1";
+
         public Player(string name)
         {
             Name = name;
         }
-        // 現在地
-        private int _position;
-        public int Position
-        {
-            get { return _position; }
-            set { _position = value; }
-        }
-        // プレイヤーの名前
-        private string _name;
-        public string Name
-        {
-            get { return _name; }
-            set { _name = value; }
-        }
-        private bool IsMainPlayer => Name != "cp1";
 
         //サイコロをふる
-        public int rollTheDice()
+        public int GetDiceNumber()
         {
             Console.WriteLine(Name + "のターンです");
             if (IsMainPlayer)
