@@ -6,7 +6,9 @@ namespace Sugoroku
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Player me = new Player("yuuki");
+            Game game = new Game(me);
+            game.start();
         }
     }
 }
