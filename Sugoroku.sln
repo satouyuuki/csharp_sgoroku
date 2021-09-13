@@ -5,6 +5,11 @@ VisualStudioVersion = 16.0.810.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sugoroku", "Sugoroku\Sugoroku.csproj", "{0110C6AF-86F1-4C52-B5D4-AB3B03B9493A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DD624241-851E-45A7-9392-A5D5C30D6B1E}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
