@@ -22,12 +22,16 @@ namespace Sugoroku
             get { return _name; }
             set { _name = value; }
         }
+        private bool IsMainPlayer => Name != "cp1";
 
         //サイコロをふる
         public int rollTheDice()
         {
-            Console.WriteLine("あなたのターンです");
-            Console.ReadKey();
+            Console.WriteLine(Name + "のターンです");
+            if (IsMainPlayer)
+            {
+                Console.ReadKey();
+            }
             int roll = new Random().Next(1, 7);
             Console.WriteLine(roll + "の目が出ました");
             return roll;

@@ -5,33 +5,41 @@ namespace Sugoroku
     {
         //ゴールのマス
         public int squaresLength = 31;
-        public Player player;
+        // サイコロを振った回数
+        public int Count { get; set; }
 
-        public Game(Player player)
+        private Player CurrentPlayer => Count % 2 == 0 ? player : cp1;
+
+        public Player player;
+        public Player cp1;
+
+        public Game(Player player, Player cp1)
         {
             this.player = player;
+            this.cp1 = cp1;
         }
 
         public void start()
         {
-            //出たマスの合計
-            int i = player.Position;
-            while(i < squaresLength)
+            while (CurrentPlayer.Position < squaresLength)
             {
-                int roll = player.rollTheDice();
-                i += roll;
+                int roll = CurrentPlayer.rollTheDice();
+                CurrentPlayer.Position += roll;
+
                 // 出目の数がゴールを超えたとき
-                if(i > squaresLength)
+                if (CurrentPlayer.Position > squaresLength)
                 {
-                    i = 2 * squaresLength - i;
+                    CurrentPlayer.Position = 2 * squaresLength - CurrentPlayer.Position;
                 }
-                else if(i == squaresLength)
+                else if(CurrentPlayer.Position == squaresLength)
                 {
                     break;
                 }
-                Console.WriteLine(roll + "進む" + "\t" + "残りは" + (squaresLength - i) + "マスです");
+                Console.WriteLine(roll + "進む" + "\t" + "残りは" + (squaresLength - CurrentPlayer.Position) + "マスです");
+                Count++;
             }
-            Console.WriteLine("ゴール!!");
+
+            Console.WriteLine("ゴール!!" + CurrentPlayer.Name + "の勝ちです");
         }
     }
 }

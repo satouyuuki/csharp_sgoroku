@@ -7,7 +7,8 @@ namespace Sugoroku
         static void Main(string[] args)
         {
             Player me = new Player("yuuki");
-            Game game = new Game(me);
+            Player cp1 = new Player("cp1");
+            Game game = new Game(me, cp1);
             game.start();
         }
     }
