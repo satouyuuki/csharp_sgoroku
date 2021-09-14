@@ -16,7 +16,7 @@ namespace Sugoroku
         /// <summary>
         /// プレイヤーが自分かどうか
         /// </summary>
-        private bool IsMainPlayer => Name != "cp1";
+        public bool IsMainPlayer { get; set; }
 
         public Player(string name)
         {
@@ -26,7 +26,7 @@ namespace Sugoroku
         //サイコロをふる
         public int GetDiceNumber()
         {
-            Console.WriteLine(Name + "のターンです");
+            Console.WriteLine(Name + "のターンです。エンターキーを押してください。");
             if (IsMainPlayer)
             {
                 Console.ReadKey();

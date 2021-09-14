@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace Sugoroku
 {
     public class Game
@@ -13,27 +15,81 @@ namespace Sugoroku
         /// </summary>
         private int Count { get; set; }
 
-        private Player CurrentPlayer => Count % 2 == 0 ? player : cp1;
+        /// <summary>
+        /// トータルのゲーム参加人数
+        /// </summary>
+        private int totalPlayer;
+        private int TotalPlayer {
+            get { return this.totalPlayer; }
+            set {
+                this.totalPlayer = value;
+                for (int i = 1; i < value; i++)
+                {
+                    CPUs.Add(new Player("cpu" + i));
+                }
+            }
+        }
+        /// <summary>
+        /// 今サイコロを持ってるプレイヤー
+        /// </summary>
+        private Player CurrentPlayer
+        {
+            get
+            {
+                int remain = Count % TotalPlayer;
+                if(remain == 0)
+                {
+                    MainPlayer.IsMainPlayer = true;
+                    return MainPlayer;
+                } else
+                {
+                    MainPlayer.IsMainPlayer = false;
+                    return CPUs[remain - 1];
+                }
+            }
+        }
 
         /// <summary>
         /// MainPlayer
         /// </summary>
-        private Player player;
+        private Player MainPlayer { get; set; }
 
         /// <summary>
-        /// TODO: 今後５人まで増える
         /// ComputerPlayer
         /// </summary>
-        private Player cp1;
+        private List<Player> CPUs = new List<Player>();
 
-        public Game(Player player, Player cp1)
+        public Game()
         {
-            this.player = player;
-            this.cp1 = cp1;
+            Console.WriteLine("Game Start....");
+            Console.ReadKey();
+            setMainPlayer();
+        }
+
+        private void setMainPlayer()
+        {
+            Console.WriteLine("名前を入力してください※何も入力しないと「名無しさん」になります。");
+            string name = Console.ReadLine();
+            MainPlayer = !string.IsNullOrEmpty(name) ? new Player(name) : new Player("名無しさん");
+        }
+
+        private void SetTotalPlayer()
+        {
+            int totalPlayer = 0;
+
+            while(totalPlayer < 2 || totalPlayer > 5)
+            {
+                Console.WriteLine("何人対戦にしますか？（２〜５人まで）");
+                bool isParsed = int.TryParse(Console.ReadLine(), out totalPlayer);
+            }
+            Console.WriteLine(totalPlayer + "人対戦モード");
+            TotalPlayer = totalPlayer;
         }
 
         public void Start()
         {
+            SetTotalPlayer();
+
             while (CurrentPlayer.Position < SquaresLength)
             {
                 int roll = CurrentPlayer.GetDiceNumber();
