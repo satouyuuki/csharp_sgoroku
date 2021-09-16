@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace Sugoroku
 {
@@ -9,6 +11,11 @@ namespace Sugoroku
         /// ゴールのマス
         /// </summary>
         private int SquaresLength = 31;
+
+        /// <summary>
+        /// マスのルート
+        /// </summary>
+        private List<Square> Squares = new List<Square>();
 
         /// <summary>
         /// サイコロを振った回数
@@ -64,6 +71,27 @@ namespace Sugoroku
             Console.WriteLine("Game Start....");
             Console.ReadKey();
             setMainPlayer();
+            SetSquare();
+        }
+
+        private void SetSquare()
+        {
+            int[] squares = Enumerable.Range(1, SquaresLength).ToArray();
+            for(int i = 0; i < squares.Length; i++)
+            {
+                //Squares[i] = new Square(squares[i]);
+                Squares.Add(new Square(squares[i]));
+                Console.WriteLine(Squares[i].Number);
+            }
+            Squares[0].AddEffect("double", new EffectA());
+            Squares[5].AddEffect("double", new EffectA());
+            Squares[7].AddEffect("double", new EffectA());
+            Squares[10].AddEffect("double", new EffectA());
+            Squares[15].AddEffect("double", new EffectA());
+            Squares[17].AddEffect("double", new EffectA());
+            Squares[20].AddEffect("double", new EffectA());
+            Squares[25].AddEffect("double", new EffectA());
+            Console.WriteLine(Squares[4].EffectName);
         }
 
         private void setMainPlayer()
@@ -93,6 +121,7 @@ namespace Sugoroku
             while (CurrentPlayer.Position < SquaresLength)
             {
                 int roll = CurrentPlayer.GetDiceNumber();
+                Console.WriteLine(roll + "進む");
                 CurrentPlayer.Position += roll;
 
                 // 出目の数がゴールを超えたとき
@@ -104,8 +133,26 @@ namespace Sugoroku
                 {
                     break;
                 }
-                Console.WriteLine(roll + "進む" + "\t" + "残りは" + (SquaresLength - CurrentPlayer.Position) + "マスです");
+
+                while (Squares[CurrentPlayer.Position - 1].IsEffect)
+                {
+                    // プレイヤーのポジションequalマスの目
+                    Squares[CurrentPlayer.Position - 1].Execute(roll, CurrentPlayer);
+                    // 出目の数がゴールを超えたとき
+                    if (CurrentPlayer.Position > SquaresLength)
+                    {
+                        CurrentPlayer.Position = 2 * SquaresLength - CurrentPlayer.Position;
+                    }
+                    else if (CurrentPlayer.Position == SquaresLength)
+                    {
+                        break;
+                    }
+                }
+
+                Console.WriteLine("残りは" + (SquaresLength - CurrentPlayer.Position) + "マスです");
                 Count++;
+                // 一秒間隔をあける
+                Thread.Sleep(1000);
             }
 
             Console.WriteLine("ゴール!!" + CurrentPlayer.Name + "の勝ちです");

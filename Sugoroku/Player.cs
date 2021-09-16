@@ -26,9 +26,10 @@ namespace Sugoroku
         //サイコロをふる
         public int GetDiceNumber()
         {
-            Console.WriteLine(Name + "のターンです。エンターキーを押してください。");
+            Console.WriteLine(Name + "のターンです。");
             if (IsMainPlayer)
             {
+                Console.WriteLine("エンターキーを押してください。");
                 Console.ReadKey();
             }
             int roll = new Random().Next(1, 7);
