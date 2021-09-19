@@ -36,12 +36,12 @@ namespace Sugoroku
             EffectMap.Add(effectName, effect);
         }
 
-        public void Execute(int diceNum, Player player)
+        public void Execute(Player player, int diceNum)
         {
             Console.WriteLine(EffectName + "マスの効果発動。マスの目は" + Number);
             if(EffectMap.ContainsKey(EffectName))
             {
-                EffectMap[EffectName].Execute(diceNum, player);
+                EffectMap[EffectName].Execute(player, diceNum);
             }
         }
     }
