@@ -18,7 +18,7 @@ namespace Sugoroku
         /// <summary>
         /// マスの効果
         /// </summary>
-        public Dictionary<string, Effect> EffectMap = new Dictionary<string, Effect>();
+        private Dictionary<string, Effect> EffectMap = new Dictionary<string, Effect>();
 
         public bool IsEffect
         {
@@ -36,12 +36,21 @@ namespace Sugoroku
             EffectMap.Add(effectName, effect);
         }
 
-        public void Execute(Player player, int diceNum)
+        public void Execute(Player player)
         {
             Console.WriteLine(EffectName + "マスの効果発動。マスの目は" + Number);
             if(EffectMap.ContainsKey(EffectName))
             {
-                EffectMap[EffectName].Execute(player, diceNum);
+                EffectMap[EffectName].Execute(player);
+            }
+        }
+
+        public void Execute(Player player, List<Player> players)
+        {
+            Console.WriteLine(EffectName + "マスの効果発動。マスの目は" + Number);
+            if (EffectMap.ContainsKey(EffectName))
+            {
+                EffectMap[EffectName].Execute(player, players);
             }
         }
     }

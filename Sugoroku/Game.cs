@@ -5,6 +5,16 @@ using System.Threading;
 
 namespace Sugoroku
 {
+    public enum EEffectName
+    {
+        onerest,
+        tworest,
+        everyrest,
+        redo,
+        doublego,
+        sixgo,
+        threeback,
+    }
     public class Game
     {
         /// <summary>
@@ -18,6 +28,14 @@ namespace Sugoroku
         private int MaxMember = 5;
 
         /// <summary>
+        /// 現在ユーザーのマス目
+        /// </summary>
+        private Square CurrentSquare
+        {
+            get { return Squares[CurrentPlayer.Position - 1]; }
+        }
+
+        /// <summary>
         /// マスのルート
         /// </summary>
         private List<Square> Squares = new List<Square>();
@@ -25,23 +43,41 @@ namespace Sugoroku
         /// <summary>
         /// サイコロを振った回数
         /// </summary>
-        public int Count { get; set; }
+        private int Count { get; set; }
 
         /// <summary>
         /// 今サイコロを持ってるプレイヤー
         /// </summary>
         private Player CurrentPlayer
         {
-            get
-            {
-                return Players.Find(p => p.IsMyTurn(Count));
-            }
+            get { return Players.Find(p => p.IsMyTurn(Count)); }
         }
-        
+
         /// <summary>
         /// プレイヤー達
         /// </summary>
-        public List<Player> Players = new List<Player>();
+        private List<Player> Players = new List<Player>();
+
+        /// <summary>
+        /// プレイヤーが休みのマスにいるかどうか
+        /// </summary>
+        private bool IsSkipState
+        {
+            get
+            {
+                var isSkip = CurrentPlayer.RestLength > ERestLength.none;
+                if (isSkip) Console.WriteLine(CurrentPlayer.Name + "はスキップ");
+                return isSkip;
+            }
+        }
+
+        /// <summary>
+        /// プレイヤーがずっと休みのマスにいるかどうか
+        /// </summary>
+        private bool IsEverySkipState
+        {
+            get { return CurrentPlayer.RestLength == ERestLength.every; }
+        }
 
         public Game()
         {
@@ -53,19 +89,20 @@ namespace Sugoroku
 
         private void SetSquare()
         {
-            int[] squares = Enumerable.Range(1, SquaresLength).ToArray();
-            for(int i = 0; i < squares.Length; i++)
-            {
-                Squares.Add(new Square(squares[i]));
-            }
-            //Squares[0].AddEffect("everyrest", new EffectF());
-            //Squares[5].AddEffect("everyrest", new EffectF());
-            //Squares[3].AddEffect("everyrest", new EffectF());
-            Squares[11].AddEffect("threeback", new EffectB());
-            Squares[15].AddEffect("onerest", new EffectD());
-            Squares[17].AddEffect("sixgo", new EffectC());
-            Squares[20].AddEffect("double", new EffectA());
-            Squares[25].AddEffect("onerest", new EffectD());
+            Square[] squares = Enumerable.Range(1, SquaresLength).Select(x => new Square(x)).ToArray();
+            Squares.AddRange(squares);
+
+            Squares[1].AddEffect(EEffectName.doublego.ToString(), new EffectA());
+            Squares[5].AddEffect(EEffectName.everyrest.ToString(), new EffectF());
+            Squares[3].AddEffect(EEffectName.everyrest.ToString(), new EffectF());
+            Squares[11].AddEffect(EEffectName.threeback.ToString(), new EffectB());
+            Squares[13].AddEffect(EEffectName.redo.ToString(), new EffectG());
+            Squares[15].AddEffect(EEffectName.onerest.ToString(), new EffectD());
+            Squares[17].AddEffect(EEffectName.sixgo.ToString(), new EffectC());
+            Squares[20].AddEffect(EEffectName.doublego.ToString(), new EffectA());
+            Squares[22].AddEffect(EEffectName.redo.ToString(), new EffectG());
+            Squares[25].AddEffect(EEffectName.onerest.ToString(), new EffectD());
+            Squares[27].AddEffect(EEffectName.redo.ToString(), new EffectG());
         }
 
         private void SetPlayer()
@@ -77,16 +114,15 @@ namespace Sugoroku
             Players.Add(mainPlayer);
 
             int totalPlayer = 0;
-            while(totalPlayer <= 1 || totalPlayer > MaxMember)
+            while (totalPlayer <= 1 || totalPlayer > MaxMember)
             {
                 Console.WriteLine("何人対戦にしますか？（２〜５人まで）");
                 bool isParsed = int.TryParse(Console.ReadLine(), out totalPlayer);
             }
             Console.WriteLine(totalPlayer + "人対戦モード");
-            for (int i = 1; i < totalPlayer; i++)
-            {
-                Players.Add(new Player("cpu" + i));
-            }
+
+            Player[] cpus = Enumerable.Range(1, totalPlayer - 1).Select(i => new Player("cpu" + i)).ToArray();
+            Players.AddRange(cpus);
         }
 
         private bool IsGool()
@@ -103,31 +139,49 @@ namespace Sugoroku
             return false;
         }
 
+        private void ShopPlayerPosition()
+        {
+            foreach(Square square in Squares)
+            {
+                string showSquare = square.IsEffect ? square.EffectName : square.Number.ToString();
+                string[] shopPlayers = Players
+                    .FindAll(x => x.Position == square.Number)
+                    .Select(x => x.Name)
+                    .ToArray();
+                string shopPlayer = shopPlayers != null ? String.Join(",", shopPlayers) : "";
+                Console.Write("{0}:{1} \t", showSquare, shopPlayer);
+            }
+            Console.WriteLine();
+        }
+
         public void Start()
         {
             while (CurrentPlayer.Position < SquaresLength)
             {
-                // 休み状態を見てスキップする
-                if(CurrentPlayer.RestLength > ERestLength.none)
+                if (IsSkipState)
                 {
-                    Console.WriteLine(CurrentPlayer.Name + "はスキップ");
-                    // 
-                    if(CurrentPlayer.RestLength != ERestLength.every)
-                        CurrentPlayer.RestLength--;
+                    if(!IsEverySkipState) CurrentPlayer.RestLength--;
                     Count++;
                     continue;
                 }
 
-                int roll = CurrentPlayer.GetDiceNumber();
-                Console.WriteLine(roll + "進む");
-                CurrentPlayer.Position += roll;
+                if(CurrentPlayer.IsMainPlayer) ShopPlayerPosition();
+                CurrentPlayer.RollDice();
 
                 if (IsGool()) break;
+
+
                 // 効果マスで、プレイヤーの休みが０の時
-                while (Squares[CurrentPlayer.Position - 1].IsEffect && CurrentPlayer.RestLength == ERestLength.none)
+                while (CurrentSquare.IsEffect && CurrentPlayer.RestLength == ERestLength.none)
                 {
                     // プレイヤーのポジションequalマスの目
-                    Squares[CurrentPlayer.Position - 1].Execute(CurrentPlayer, roll);
+                    if(CurrentSquare.EffectName == EEffectName.everyrest.ToString())
+                    {
+                        CurrentSquare.Execute(CurrentPlayer, Players);
+                    } else
+                    {
+                        CurrentSquare.Execute(CurrentPlayer);
+                    }
 
                     if (IsGool()) break;
                 }

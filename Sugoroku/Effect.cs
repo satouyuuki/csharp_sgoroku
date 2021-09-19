@@ -1,69 +1,86 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Sugoroku
 {
     abstract public class Effect
     {
-        public abstract Player Execute(Player player, int diceNum);
+        public abstract void Execute(Player player);
+        public virtual void Execute(Player player, List<Player> players) { }
     }
 
     public class EffectA: Effect
     {
-        public override Player Execute(Player player, int diceNum)
+        public override void Execute(Player player)
         {
-            Console.WriteLine(diceNum + "の目を２倍にします。");
-            player.Position += diceNum;
-            return player;
+            Console.WriteLine("出た目×2の位置に移動。");
+            player.Position += player.DiceNumber;
         }
     }
 
     public class EffectB : Effect
     {
-        public override Player Execute(Player player, int diceNum)
+        public override void Execute(Player player)
         {
             Console.WriteLine("３マス戻ります。");
             player.Position -= 3;
-            return player;
         }
     }
 
     public class EffectC : Effect
     {
-        public override Player Execute(Player player, int diceNum)
+        public override void Execute(Player player)
         {
             Console.WriteLine("6マス進ます。");
             player.Position += 6;
-            return player;
         }
     }
 
     public class EffectD : Effect
     {
-        public override Player Execute(Player player, int diceNum)
+        public override void Execute(Player player)
         {
             Console.WriteLine("1回休み");
             player.RestLength = ERestLength.one;
-            return player;
         }
     }
 
     public class EffectE : Effect
     {
-        public override Player Execute(Player player, int diceNum)
+        public override void Execute(Player player)
         {
             Console.WriteLine("2回休み");
             player.RestLength = ERestLength.two;
-            return player;
         }
     }
 
     public class EffectF : Effect
     {
-        public override Player Execute(Player player, int diceNum)
+        public override void Execute(Player player) { }
+        public override void Execute(Player player, List<Player> players)
         {
-            Console.WriteLine("毎回休み");
+            Console.WriteLine("他の人が同じマスに止まるまで休み");
+
+            // 同じマスに他のプレーヤーがいる＆他のプレイヤーがずっと休みのマスにいるとき
+            var releasedPlayer = players.Find(p => p.Position == player.Position && p.RestLength == ERestLength.every);
+            Console.WriteLine("releasedPlayer is null ", releasedPlayer == null);
+
+            if(releasedPlayer != null)
+            {
+                releasedPlayer.RestLength = ERestLength.none;
+                Console.WriteLine(releasedPlayer.Name + "が解放されました。");
+            }
+
             player.RestLength = ERestLength.every;
-            return player;
+        }
+    }
+
+    public class EffectG : Effect
+    {
+        public override void Execute(Player player)
+        {
+            Console.WriteLine("最初のマスまで戻る");
+            player.Position = 1;
         }
     }
 }

@@ -40,6 +40,11 @@ namespace Sugoroku
         private int Order { get; set; }
 
         /// <summary>
+        /// サイコロの出目
+        /// </summary>
+        public int DiceNumber { get; set; }
+
+        /// <summary>
         /// インスタンス化された数
         /// </summary>
         private static int InstanceNum = 0;
@@ -58,7 +63,7 @@ namespace Sugoroku
         }
 
         //サイコロをふる
-        public int GetDiceNumber()
+        public void RollDice()
         {
             Console.WriteLine(Name + "のターンです。");
             if (IsMainPlayer)
@@ -66,9 +71,11 @@ namespace Sugoroku
                 Console.WriteLine("エンターキーを押してください。");
                 Console.ReadKey();
             }
-            int roll = new Random().Next(1, 7);
-            Console.WriteLine(roll + "の目が出ました");
-            return roll;
+            DiceNumber = new Random().Next(1, 7);
+            Console.WriteLine(DiceNumber + "の目が出ました");
+            Position += DiceNumber;
+            Console.WriteLine(DiceNumber + "進む");
+            
         }
     }
 }
