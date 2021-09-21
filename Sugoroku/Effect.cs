@@ -13,8 +13,10 @@ namespace Sugoroku
     {
         public override void Execute(Player player)
         {
-            Console.WriteLine("出た目×2の位置に移動。");
-            player.Position += player.DiceNumber;
+            foreach(Dice dice in player.Dices)
+            {
+                player.Position += dice.CurrentRoll;
+            }
         }
     }
 
@@ -22,7 +24,6 @@ namespace Sugoroku
     {
         public override void Execute(Player player)
         {
-            Console.WriteLine("３マス戻ります。");
             player.Position -= 3;
         }
     }
@@ -31,7 +32,6 @@ namespace Sugoroku
     {
         public override void Execute(Player player)
         {
-            Console.WriteLine("6マス進ます。");
             player.Position += 6;
         }
     }
@@ -40,7 +40,6 @@ namespace Sugoroku
     {
         public override void Execute(Player player)
         {
-            Console.WriteLine("1回休み");
             player.RestLength = ERestLength.one;
         }
     }
@@ -49,7 +48,6 @@ namespace Sugoroku
     {
         public override void Execute(Player player)
         {
-            Console.WriteLine("2回休み");
             player.RestLength = ERestLength.two;
         }
     }
@@ -63,7 +61,6 @@ namespace Sugoroku
 
             // 同じマスに他のプレーヤーがいる＆他のプレイヤーがずっと休みのマスにいるとき
             var releasedPlayer = players.Find(p => p.Position == player.Position && p.RestLength == ERestLength.every);
-            Console.WriteLine("releasedPlayer is null ", releasedPlayer == null);
 
             if(releasedPlayer != null)
             {
@@ -79,7 +76,6 @@ namespace Sugoroku
     {
         public override void Execute(Player player)
         {
-            Console.WriteLine("最初のマスまで戻る");
             player.Position = 1;
         }
     }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+
 namespace Sugoroku
 {
     public enum ERestLength
@@ -14,7 +16,21 @@ namespace Sugoroku
         /// <summary>
         /// 現在地
         /// </summary>
-        public int Position { get; set; }
+        private int _position;
+        public int Position {
+            get { return _position; }
+            set
+            {
+                if (value > Game.SquaresLength)
+                {
+                    _position = 2 * Game.SquaresLength - value;
+                }
+                else
+                {
+                    _position = value;
+                }
+            }
+        }
 
         /// <summary>
         /// プレイヤーの名前
@@ -40,9 +56,17 @@ namespace Sugoroku
         private int Order { get; set; }
 
         /// <summary>
-        /// サイコロの出目
+        /// 所持しているサイコロ
         /// </summary>
-        public int DiceNumber { get; set; }
+        public Dice[] Dices = { new Dice(), new Dice()};
+
+        /// <summary>
+        /// ゴールしたかどうか
+        /// </summary>
+        public bool IsGool
+        {
+            get { return Position == Game.SquaresLength; }
+        }
 
         /// <summary>
         /// インスタンス化された数
@@ -56,9 +80,14 @@ namespace Sugoroku
             Order = InstanceNum;
         }
 
+        public static void ResetPlayerInstances()
+        {
+            Player.InstanceNum = 0;
+        }
+
         public bool IsMyTurn(int count)
         {
-            int remain = count % InstanceNum;
+            int remain = count % Player.InstanceNum;
             return remain == (Order - 1);
         }
 
@@ -71,10 +100,16 @@ namespace Sugoroku
                 Console.WriteLine("エンターキーを押してください。");
                 Console.ReadKey();
             }
-            DiceNumber = new Random().Next(1, 7);
-            Console.WriteLine(DiceNumber + "の目が出ました");
-            Position += DiceNumber;
-            Console.WriteLine(DiceNumber + "進む");
+
+            int totalRoll = 0;
+            foreach (Dice dice in Dices)
+            {
+                dice.GetDiceNumber();
+                totalRoll += dice.CurrentRoll;
+                Console.WriteLine(dice.CurrentRoll + "の目が出ました");
+            }
+            Position += totalRoll;
+            Console.WriteLine(totalRoll + "進む");
             
         }
     }

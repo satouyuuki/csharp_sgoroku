@@ -2,25 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-
 namespace Sugoroku
 {
-    public enum EEffectName
-    {
-        onerest,
-        tworest,
-        everyrest,
-        redo,
-        doublego,
-        sixgo,
-        threeback,
-    }
     public class Game
     {
         /// <summary>
         /// ゴールのマス
         /// </summary>
-        private int SquaresLength = 31;
+        public static int SquaresLength = 31;
 
         /// <summary>
         /// プレイヤーの最大人数
@@ -32,7 +21,10 @@ namespace Sugoroku
         /// </summary>
         private Square CurrentSquare
         {
-            get { return Squares[CurrentPlayer.Position - 1]; }
+            get
+            {
+                return Squares[CurrentPlayer.Position - 1];
+            }
         }
 
         /// <summary>
@@ -58,28 +50,12 @@ namespace Sugoroku
         /// </summary>
         private List<Player> Players = new List<Player>();
 
-        /// <summary>
-        /// プレイヤーが休みのマスにいるかどうか
-        /// </summary>
-        private bool IsSkipState
-        {
-            get
-            {
-                var isSkip = CurrentPlayer.RestLength > ERestLength.none;
-                if (isSkip) Console.WriteLine(CurrentPlayer.Name + "はスキップ");
-                return isSkip;
-            }
-        }
-
-        /// <summary>
-        /// プレイヤーがずっと休みのマスにいるかどうか
-        /// </summary>
-        private bool IsEverySkipState
-        {
-            get { return CurrentPlayer.RestLength == ERestLength.every; }
-        }
-
         public Game()
+        {
+            NewGame();
+        }
+
+        private void NewGame()
         {
             Console.WriteLine("Game Start....");
             Console.ReadKey();
@@ -87,22 +63,44 @@ namespace Sugoroku
             SetPlayer();
         }
 
+        private void ReSettingsGame()
+        {
+            Count = 0;
+            Player.ResetPlayerInstances();
+            Players = new List<Player>();
+            Squares = new List<Square>();
+            NewGame();
+            Start();
+        }
+
+        private void RestartGame()
+        {
+            Count = 0;
+            Players = Players.Select(p =>
+            {
+                p.Position = 0;
+                p.RestLength = ERestLength.none;
+                return p;
+            }).ToList();
+            Start();
+        }
+
         private void SetSquare()
         {
-            Square[] squares = Enumerable.Range(1, SquaresLength).Select(x => new Square(x)).ToArray();
+            Square[] squares = Enumerable.Range(1, Game.SquaresLength).Select(x => new Square(x)).ToArray();
             Squares.AddRange(squares);
 
-            Squares[1].AddEffect(EEffectName.doublego.ToString(), new EffectA());
-            Squares[5].AddEffect(EEffectName.everyrest.ToString(), new EffectF());
-            Squares[3].AddEffect(EEffectName.everyrest.ToString(), new EffectF());
-            Squares[11].AddEffect(EEffectName.threeback.ToString(), new EffectB());
-            Squares[13].AddEffect(EEffectName.redo.ToString(), new EffectG());
-            Squares[15].AddEffect(EEffectName.onerest.ToString(), new EffectD());
-            Squares[17].AddEffect(EEffectName.sixgo.ToString(), new EffectC());
-            Squares[20].AddEffect(EEffectName.doublego.ToString(), new EffectA());
-            Squares[22].AddEffect(EEffectName.redo.ToString(), new EffectG());
-            Squares[25].AddEffect(EEffectName.onerest.ToString(), new EffectD());
-            Squares[27].AddEffect(EEffectName.redo.ToString(), new EffectG());
+            Squares[1].AddEffect(EEffectName.doublego.ToAliasString(), new EffectA());
+            Squares[5].AddEffect(EEffectName.everyrest.ToAliasString(), new EffectF());
+            Squares[3].AddEffect(EEffectName.everyrest.ToAliasString(), new EffectF());
+            Squares[11].AddEffect(EEffectName.threeback.ToAliasString(), new EffectB());
+            Squares[13].AddEffect(EEffectName.redo.ToAliasString(), new EffectG());
+            Squares[15].AddEffect(EEffectName.onerest.ToAliasString(), new EffectD());
+            Squares[17].AddEffect(EEffectName.sixgo.ToAliasString(), new EffectC());
+            Squares[20].AddEffect(EEffectName.doublego.ToAliasString(), new EffectA());
+            Squares[22].AddEffect(EEffectName.redo.ToAliasString(), new EffectG());
+            Squares[25].AddEffect(EEffectName.onerest.ToAliasString(), new EffectD());
+            Squares[27].AddEffect(EEffectName.redo.ToAliasString(), new EffectG());
         }
 
         private void SetPlayer()
@@ -125,20 +123,6 @@ namespace Sugoroku
             Players.AddRange(cpus);
         }
 
-        private bool IsGool()
-        {
-            // 出目の数がゴールを超えたとき
-            if (CurrentPlayer.Position > SquaresLength)
-            {
-                CurrentPlayer.Position = 2 * SquaresLength - CurrentPlayer.Position;
-            }
-            else if (CurrentPlayer.Position == SquaresLength)
-            {
-                return true;
-            }
-            return false;
-        }
-
         private void ShopPlayerPosition()
         {
             foreach(Square square in Squares)
@@ -154,45 +138,73 @@ namespace Sugoroku
             Console.WriteLine();
         }
 
+        private void ConfirmContinue()
+        {
+            int settings = 0;
+            while (settings != 1 && settings != 2)
+            {
+                Console.WriteLine("同じ設定でもう一度遊ぶ: 1, 設定に戻る: 2");
+                bool isParsed = int.TryParse(Console.ReadLine(), out settings);
+            }
+            switch (settings)
+            {
+                case 1:
+                    RestartGame();
+                    break;
+                case 2:
+                default:
+                    ReSettingsGame();
+                    break;
+            }
+        }
+
         public void Start()
         {
-            while (CurrentPlayer.Position < SquaresLength)
+            Console.WriteLine("currentplayer = " + CurrentPlayer.Name);
+            while (CurrentPlayer.Position < Game.SquaresLength)
             {
-                if (IsSkipState)
+                // ゲームカウントを１上げる
+                // ゲームをわかりやすくするための補助
+                if (CurrentPlayer.IsMainPlayer) ShopPlayerPosition();
+                Console.WriteLine("---------" + CurrentPlayer.Name + "------------");
+
+                // スキップ処理
+                if (CurrentPlayer.RestLength > ERestLength.none)
                 {
-                    if(!IsEverySkipState) CurrentPlayer.RestLength--;
+                    Console.WriteLine(CurrentPlayer.Name + "はスキップ");
+                    if (CurrentPlayer.RestLength != ERestLength.every) CurrentPlayer.RestLength--;
                     Count++;
                     continue;
                 }
-
-                if(CurrentPlayer.IsMainPlayer) ShopPlayerPosition();
+                // サイコロをふる
                 CurrentPlayer.RollDice();
 
-                if (IsGool()) break;
+                if (CurrentPlayer.IsGool) break;
 
 
                 // 効果マスで、プレイヤーの休みが０の時
                 while (CurrentSquare.IsEffect && CurrentPlayer.RestLength == ERestLength.none)
                 {
-                    // プレイヤーのポジションequalマスの目
-                    if(CurrentSquare.EffectName == EEffectName.everyrest.ToString())
+                    if(CurrentSquare.EffectName == EEffectName.everyrest.ToAliasString())
                     {
                         CurrentSquare.Execute(CurrentPlayer, Players);
                     } else
                     {
                         CurrentSquare.Execute(CurrentPlayer);
                     }
-
-                    if (IsGool()) break;
                 }
 
-                Console.WriteLine("残りは" + (SquaresLength - CurrentPlayer.Position) + "マスです");
+                if (CurrentPlayer.IsGool) break;
+
+                Console.WriteLine("残りは" + (Game.SquaresLength - CurrentPlayer.Position) + "マスです");
                 Count++;
                 // 一秒間隔をあける
                 Thread.Sleep(1000);
             }
 
             Console.WriteLine("ゴール!!" + CurrentPlayer.Name + "の勝ちです");
+            ConfirmContinue();
+            
         }
     }
 }

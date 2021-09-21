@@ -38,7 +38,7 @@ namespace Sugoroku
 
         public void Execute(Player player)
         {
-            Console.WriteLine(EffectName + "マスの効果発動。マスの目は" + Number);
+            Console.WriteLine(EffectName + "マスの効果発動");
             if(EffectMap.ContainsKey(EffectName))
             {
                 EffectMap[EffectName].Execute(player);
@@ -47,7 +47,7 @@ namespace Sugoroku
 
         public void Execute(Player player, List<Player> players)
         {
-            Console.WriteLine(EffectName + "マスの効果発動。マスの目は" + Number);
+            Console.WriteLine(EffectName + "マスの効果発動");
             if (EffectMap.ContainsKey(EffectName))
             {
                 EffectMap[EffectName].Execute(player, players);
